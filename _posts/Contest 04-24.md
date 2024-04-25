@@ -2,10 +2,11 @@
 layout: post
 title: "04-24 模拟赛总结"
 date:   2024-04-25
-tags: [tag1, tag2]
+tags: [模拟赛]
 comments: true
 author: wangyangjena
 ---
+
 # 04-24 模拟赛总结
 
 
