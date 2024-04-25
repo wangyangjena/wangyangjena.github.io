@@ -1,3 +1,3 @@
 # Wangyangjena.github.io
 
-My Personal Blog via GitHub
+You're Going Places!
