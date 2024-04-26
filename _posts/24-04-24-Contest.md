@@ -1,5 +1,3 @@
-````
-```
 ---
 layout: post
 title: "04-24 模拟赛总结"
@@ -8,9 +6,6 @@ tags: [Apr-mx, 模拟赛]
 comments: true
 author: wangyangjena
 ---
-```
-````
-
 
 
 <head>
