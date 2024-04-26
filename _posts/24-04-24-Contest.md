@@ -1,11 +1,17 @@
+````
+```
 ---
 layout: post
 title: "04-24 模拟赛总结"
-date:   2024-04-25
-tags: [模拟赛]
+date:   2024-04-24
+tags: [Apr-mx, 模拟赛]
 comments: true
 author: wangyangjena
 ---
+```
+````
+
+
 
 <head>
     <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
@@ -18,6 +24,8 @@ author: wangyangjena
         });
     </script>
 </head>
+
+
 
 # 04-24 模拟赛总结
 
@@ -36,7 +44,6 @@ author: wangyangjena
 推式子
 
 只有方差这里可能爆 i64， 原因是两个 1e10 级别的互质分母一通分就炸了
-
 $$
 对于方差： 原式 = \frac{1}{i}(\sum A_j ^ 2 - 2 * \sum A_j B_i + \sum B_i ^ 2)
 $$
@@ -62,6 +69,99 @@ $$
 
 
 做题的时候大体算一算结果的范围， 决定开不开 __int128 或者再优化 / 重新想， 有时候结果范围不同做法可能也不同（做到这样的题再更）
+
+
+
+```cpp
+#include <bits/stdc++.h> 
+#define int long long
+#define i64 __int128
+using namespace std;
+const int N = 1e5 + 10;
+
+int n;
+int a[N];
+
+void write(int x){
+    if(x < 0) putchar('-'), x = -x;
+    if(x > 9) write(x / 10);
+    putchar(x % 10 + '0');
+    return;
+}
+
+
+i64 Gcd(i64 a, i64 b){
+	if(!b) return a;
+	return Gcd(b, a % b);
+}
+
+struct Num{
+	i64 a, b;	// a/b
+
+	Num operator + (const int x)const{
+		i64 aa = x * b + a;
+		i64 gcd = Gcd(aa, b);
+		return {aa / gcd, b / gcd};
+	}
+
+	Num operator + (const Num x)const{
+		i64 lcm = b * x.b / Gcd(b, x.b);
+		i64 aa = a * (lcm / b) + x.a * (lcm / x.b);
+		i64 gcd = Gcd(aa, lcm);
+		return {aa / gcd, lcm / gcd};
+	}
+
+	Num operator * (const Num x)const{
+		i64 aa = a * x.a, bb = b * x.b;
+		i64 gcd = Gcd(aa, bb);
+		return {aa / gcd, bb / gcd};
+	}
+
+	Num operator * (const int x)const{
+		i64 aa = a * x, gcd = Gcd(aa, b);
+		return {aa / gcd, b / gcd};
+	}
+}sm[N], ave[N], fc[N], temp, tmp, ma;
+
+void Print(Num x){
+	if(x.b == 1) write(x.a);
+	else write(x.a), putchar('/'), write(x.b);
+}
+
+signed main(){
+	// freopen("1.in", "r", stdin);
+	freopen("math.in", "r", stdin);
+	freopen("math.out", "w", stdout);	
+	ios::sync_with_stdio(0);
+	cin.tie(0); cout.tie(0);
+
+	scanf("%lld", &n); // cin >> n;
+	for(int i = 1; i <= n; i++){
+		scanf("%lld", &a[i]); // cin >> a[i];
+	}
+	i64 sum = 0, pw = 0;
+	for(int i = 1; i <= n; i++){
+		ma = {1ll, i};
+		pw += a[i] * a[i];
+
+		sum += a[i];
+		sm[i] = {sum, 1};
+
+		ave[i] = ma * sum;
+
+		temp = ave[i] * ave[i] * i;
+		tmp = ave[i] * sum * 2, tmp.a = -tmp.a;
+		fc[i] = temp * ma + tmp * ma + ma * pw;
+	}
+	for(int i = 1; i <= n; i++){
+		Print(sm[i]), putchar(' ');
+		Print(ave[i]), putchar(' ');
+		Print(fc[i]), putchar('\n');
+	}
+}
+```
+
+
 
 
 
@@ -106,6 +206,72 @@ $$
 
 
 
+```cpp
+#include <bits/stdc++.h> 
+#define int long long
+using namespace std;
+const int MOD = 998244353;
+const int N = 1e7 + 10;
+
+int n, x, y, z, m[2], c[N];
+int mini, sum, ans;
+
+struct Node{
+	int sum, cnt;
+};
+vector <Node> st;
+
+signed main(){
+	// freopen("1.in", "r", stdin);
+	freopen("algorithm.in", "r", stdin);
+	freopen("algorithm.out", "w", stdout);	
+	ios::sync_with_stdio(0);
+	cin.tie(0); cout.tie(0);
+
+	cin >> n >> x >> y >> z;
+	cin >> m[0] >> m[1] >> c[0] >> c[1];
+
+	st.push_back({0, 1}), mini = 0;
+	for(int i = 0; i < n; i++){
+		if(i > 1){
+			c[i] = (c[i - 1] * x + c[i - 2] * y + z) % m[i % 2] + 1;
+		}
+		// cout << c[i] << " ";
+		if(i % 2 == 0){
+			sum += c[i];
+		}else{
+			sum -= c[i];
+			while(!st.empty() && st.back().sum > sum){
+				ans += st.back().cnt;
+				st.pop_back();
+			}
+
+			if(!st.empty() && st.back().sum == sum){
+				ans += st.back().cnt;
+				st.back().cnt++;
+			}else{
+				st.push_back({sum, 1});
+			}
+			if(sum <= mini){
+				// cout << "Case1 ";
+				ans += (c[i] - (mini - sum) - 1);
+			}else{
+				// cout << "Case2 ";
+				ans += c[i];
+			}
+			mini = min(mini, sum);
+			// cout << ans << "ans ";
+		}
+		// cout << sum << "sum\n";
+	}
+	cout << ans << "\n";
+}
+```
+
+
+
+
+
 ## T3
 
 
@@ -131,7 +297,6 @@ dp[i]\[a]\[b] 由 「 $\sum dp[a][b][c] $ 并且 i, a, b, c 位置的异或值�
 所有元素都不相等就挺有意思
 
 因为这样的话容斥起来不会多算， 简单
-
 $$
 dp[i][j] = \sum_{j < i \&\& k < j} dp[j][k] - \sum_{a_i\ xor\ a_j xor\ a_k xor \ a_l xor\ a_m == s \ \ l < k\  \&\& m < l} dp[l][m]
 $$
@@ -157,3 +322,55 @@ x = x > MOD ? x - MOD : x;
 
 
 dp 的转移通常是可以有暴力一步一步优化的， 所以写完暴力之后想想能不能再优化
+
+
+
+```cpp
+#include <bits/stdc++.h> 
+#define int long long
+using namespace std;
+const int MOD = 998244353;
+const int N = 4e3 + 10;
+
+int n, m, s;
+int a[N], pos[N];
+int dp[1 << 12][1 << 12];
+int sum[1 << 12], tot[N][1 << 12];
+
+void Mod(int &a){
+	a = a > MOD ? (a - MOD) : a;
+}
+
+signed main(){
+	// freopen("1.in", "r", stdin);
+	freopen("count.in", "r", stdin);
+	freopen("count.out", "w", stdout);	
+	ios::sync_with_stdio(0);
+	cin.tie(0); cout.tie(0);
+
+	cin >> n >> m >> s;
+	for(int i = 1; i <= n; i++){
+		cin >> a[i];
+	}
+
+	int ans = 0, up = (1 << m) - 1;
+	dp[0][0] = 1, sum[0] = 1;
+	for(int i = 1; i <= n; i++){
+		dp[i][0] += sum[0];
+		sum[i] += dp[i][0];
+		for(int j = 1; j < i; j++){
+			int num = (a[i] ^ a[j] ^ s);
+			dp[i][j] += sum[j] - tot[j - 1][num];
+			dp[i][j] = dp[i][j] % MOD + MOD;
+			tot[i][a[i] ^ a[j]] += dp[i][j];
+			sum[i] += dp[i][j];
+		}
+		for(int j = 0; j <= up; j++){
+			tot[i][j] += tot[i - 1][j], Mod(tot[i][j]);
+		}
+		ans = (ans + sum[i]) % MOD;
+	}
+	cout << ans << "\n";
+}
+```
+
