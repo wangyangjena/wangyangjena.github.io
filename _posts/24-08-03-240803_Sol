@@ -1,0 +1,123 @@
+---
+layout: post
+title: "08-03 题解"
+date:   2024-08-03
+tags: [Solution]
+comments: true
+author: wangyangjena
+
+---
+
+
+
+<head>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            inlineMath: [['$','$']]
+            }
+        });
+    </script>
+</head>
+
+
+
+# 08-03 题解
+
+**[地址](https://mna.wang/contest/1221)**
+
+## A
+
+
+
+根据题目的提示, 发现所有数的积是不变的 ($gcd(a, b) * lcm(a, b) = a * b$), 所以差大和大
+
+> 简易证明
+>
+> 设 $g = gcd(a, b)$, 则 $a = a'g,$ $b = b'g$, $lcm(a, b) = a'b'g$
+>
+> $gcd(a, b) + lcm(a, b) = g(1 + a'b')$
+>
+> $a + b = g(a'+b')$
+>
+> $gcd(a, b) + lcm(a, b) - a - b = g(a' + 1)(b' + 1) > 0$
+>
+> 所以不论怎么修改, 和都会增大(前提是本次修改对序列产生变化, 如 $a$ 是 $b$ 的倍数就不可以)
+
+
+
+考虑 $gcd$, $lcm$ 的表示形式
+
+
+
+$a = p_1^{x_1} * p_2^{x_2}......$
+
+
+
+$b = p_1^{y_1} * p_2^{y_2}......$
+
+
+
+$gcd = p_1^{min(x_1, y_1)} * p_2^{min(x_2, y_2)}$
+
+
+
+$lcm = p_1^{max(x_1, y_1)} * p_2^{max(x_2, y_2)}$
+
+
+
+所以我们发现题目中的操作不会改变 $p$ 的次数, 只是相当于把若干不同的 $p$ 重新组合
+
+
+
+所以直接贪心就行
+
+
+
+## B
+
+
+
+题意中的 $d$ 显然不能直接使用, 考虑把他拆成 $dep_y - dep_x$
+
+
+
+那么原式就变成 $(-1)^{dep_x} * (-1) ^ {dep_y} * (a - b * dep_x + b * dep_y)$
+
+
+
+设 $add_a = (-1)^{dep_x} * b$, $add_b = (-1)^{dep_x} * (a - b * dep_x)$, 二者只和 $dep_x$ 有关, 直接子树加即可
+
+
+
+至于和 $dep_y$ 有关的信息, 在单点查的时候算上就行
+
+
+
+对于撤销操作, 用 set 存储每个 $1$ 操作, 按照 dfn 排序, 删的时候 $lower_bound$, 因为每个操作 $1$ 只会被删一次, 所以复杂度正确
+
+
+
+## C
+
+
+
+**首先, 从一个点出发, 路径长度为 $d$ 的方案数是可以矩阵快速幂求出的, 直接对邻接矩阵快速幂即可**
+
+
+
+(我居然不知道啊啊啊)
+
+
+
+注意到 $k$ 非常的小, 我们可以做**容斥**
+
+
+
+设 $f(S)$ 为不经过 $i \in S$ 的天龙的方案数, 那么 $ans = \sum (-1)^{|S| * f(S)}$
+
+
+
+然后就完事了 ? ! 其实不难唉
