@@ -1,3 +1,1 @@
-# pianfan.github.io
-
-My Personal Blog via GitHub
+# Bubble_e 's Blog
