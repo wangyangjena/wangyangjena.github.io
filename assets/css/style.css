@@ -1,57 +1,23 @@
 body {
-    background-color: ; /* 米白色背景颜色 */
-    overflow: hidden; /* 防止内容溢出到背景之外 */
+    background-color: white;
+}
+/* style.css */
+
+.ball {
+  position: absolute;
+  bottom: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: red;
+  animation: rotate 3s infinite linear;
 }
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多根不规则运动线条</title>
-    <style>
-        .line {
-            position: absolute;
-            width: 2px;
-            height: 50px;
-            background-color: black;
-            animation: move 3s infinite;
-        }
-
-        .line1 {
-            animation-delay: 0s;
-        }
-
-        .line2 {
-            animation-delay: 0.5s;
-        }
-
-        .line3 {
-            animation-delay: 1s;
-        }
-
-        @keyframes move {
-            0% {
-                transform: translateY(0);
-            }
-            25% {
-                transform: translateY(50px) translateX(50px);
-            }
-            50% {
-                transform: translateY(0) translateX(100px);
-            }
-            75% {
-                transform: translateY(-50px) translateX(50px);
-            }
-            100% {
-                transform: translateY(0) translateX(0);
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="line line1"></div>
-    <div class="line line2"></div>
-    <div class="line line3"></div>
-</body>
-</html>
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
