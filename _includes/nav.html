@@ -19,6 +19,14 @@
       {% endif %}
       {% endfor %}
     </nav>
+    <nav>
+      <ul>
+        {% for item in site.data.navigation %}
+          <li><a href="{{ item.url }}">{{ item.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+    
   </div>
 
   <div class="wrapper-footer-desktop">
