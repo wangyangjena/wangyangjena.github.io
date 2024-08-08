@@ -1,6 +1,8 @@
-- title: Home
+- title: Luogu
   url: /
-- title: About
-  url: /about/
-- title: Blog
-  url: /posts/
+- title: Atcoder
+  url: /
+- title: Codeforces
+  url: /
+  - title: Cnblogs
+  url: /
