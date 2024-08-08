@@ -1,0 +1,507 @@
+---
+layout: post
+title: "07-31 题解"
+date:   2024-07-31
+tags: [Sol]
+comments: true
+author: wangyangjena
+
+
+---
+
+
+
+<head>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            inlineMath: [['$','$']]
+            }
+        });
+    </script>
+</head>
+
+
+
+
+# 07-31 题解
+
+
+
+**[地址](https://mna.wang/contest/1158)**
+
+
+
+## A
+
+
+
+首先, 如果 $k \ge m$ , 答案为 $m$ , 因为每变换一次, 前缀中多一个 1
+
+
+
+**想法**
+
+
+
+$k$ 非常的大, 不可能计算出最终状态
+
+
+
+但是 $m$ 非常小, 如果有一种 $O(答案)$ 的做法就好了 (类似 NOI 2024 D2T1 的部分分做法)
+
+
+
+**重要的性质** 
+
+​	对于一棵树, 如果每个父节点都有至少两个儿子, 那么总节点个数 $\le 2*叶子个数$  (以二叉树为例理解)
+
+
+
+根据此性质, 如果我们暴搜只搜到 $m$ 个叶子, 那么复杂度接近 $O(m)$
+
+
+
+为保证每个父节点至少两个儿子, 需要把所有状态为 1 的点剪掉 (''状态'' 即当前 x)
+
+
+
+完结 !
+
+
+
+### 代码
+
+
+
+```cpp
+#include <bits/stdc++.h>
+#define int long long
+#pragma optmistic(3)
+using namespace std;
+const int N = 1e6 + 10;
+const int INF = 1e18;
+
+int x, k, m;
+int si, ans;
+vector <int> temp;
+unordered_map <int, bool> vis;
+unordered_map <int, vector <int>> rec;
+
+void Corner(){
+    if(x == 1){
+        cout << "1\n";
+        exit(0);
+    }
+    if(k >= m){
+        cout << m << "\n";
+        exit(0);
+    }
+}
+
+int tar;
+unordered_map <int, bool> rpri;
+
+void Get_prii(int i, int num){
+    if(i == temp.size()){
+        if(rpri[num]) return;
+        rpri[num] = 1;
+        rec[tar].push_back(num);
+        return;
+    }
+	Get_prii(i + 1, num * temp[i]);
+    Get_prii(i + 1, num);
+}
+
+void Get_pri(int x){
+    temp.clear();
+    rpri.clear();
+
+    int xx = x;
+    for(int i = 2; i * i <= x; i++){
+        if(xx % i == 0){
+            while(xx % i == 0){
+                temp.push_back(i);
+                xx /= i;
+            }
+        }
+    }
+    if(xx != 1){
+        temp.push_back(xx);
+    }
+
+    tar = x;
+    Get_prii(0, 1);
+
+    sort(rec[x].begin(), rec[x].end());
+}
+
+void Dfs(int x, int dep){
+    if(!si){
+        cout << ans << "\n";
+        exit(0);
+    }
+    if(x == 1){
+        --si;
+        ++ans;
+        return;
+    }
+    if(dep == k - 1){
+        if(!vis[x]){
+            Get_pri(x);
+            vis[x] = 1;
+        }
+        for(auto i : rec[x]){
+            ans += i;
+            --si;
+            if(!si) break;
+        }
+        return;
+    }
+    if(!vis[x]){
+        Get_pri(x);
+        vis[x] = 1;
+    }
+    for(auto i : rec[x]){
+        Dfs(i, dep + 1);
+    }
+    return;
+}
+
+void Calc1(){
+    si = m;
+    Dfs(x, 0);
+    cout << ans << "\n";
+}
+
+signed main(){
+    cin >> x >> k >> m;
+    Corner();
+
+    Calc1();
+}
+```
+
+
+
+## B
+
+
+
+> 我们喜欢确定的东西, 不喜欢不确定的, 但是这题所有东西都不确定, 这性质非常好
+
+
+
+由于都不确定, 所以除了被我们选中的数, 其他都是等价的 !
+
+
+
+想出一个状态, 用来表示一种路径集合
+
+
+
+$f(l, r, 0/1)$ 表示在这条路径中, 向右走了 $l$ 步 (有 $l$ 个比他小的 $mid$) , 向左走了 $r$ 步 ($r$ 个比他大的 $mid$),   中止位置 否/是 x 的路径集合的大小
+
+
+
+搜索过程是类似二分的, 所以 $l, r$ 都是 $log$ 级别的
+
+
+
+$f(l, r, 0/1) = l! * r!$  因为所有 大于/小于 当前 $x$ 的数都是等价的
+
+
+
+所以可以仿照题目做一次搜索, 在搜索过程中求出 $f$
+
+
+
+再者, $f$ 与当前数 $x$ 的具体值无关, 只和相对大小有关, 这也是 ''序列完全不确定'' 带来的性质
+
+
+
+然后再求出从所有 小于/大于 当前 $x$ 的数中选出 $l/ r$ 个数的贡献, 可以对 前/后 缀做 dp 求出
+
+
+
+剩下的数随便放就行, 对返回值不做贡献, 有阶乘中方案
+
+
+
+形式化地
+
+
+$$
+对于 f(l, r, 0)\\
+
+ans = f(l, r, 0) * val * fac[n - l - r]\\
+
+val 与 pre[x - 1][l], suf[x + 1][r] 有关\\
+$$
+
+$$
+对于 f(l, r, 1)\\
+
+ans = f(l, r, 1) * val * fac[n - l - r - 1] (-1 是因为 x 这个数的位置已经确定)\\
+
+val 与 pre[x - 1][l], suf[x + 1][r] 有关
+$$
+
+
+### 代码
+
+
+
+```cpp
+#include <bits/stdc++.h>
+#define int long long
+#pragma optmistic(3)
+using namespace std;
+const int N = 3e5 + 10, MOD = 1e9 + 7;
+
+int n, m, x;
+int num[20][20][2];
+
+struct Node{
+    int n, v;
+
+    Node operator += (const Node &p){
+        (n += p.n) %= MOD;
+        (v += p.v) %= MOD;
+        return {n, v};
+    }
+
+    Node operator += (const int &p){
+        (v += n * p % MOD) %= MOD;
+        return {n, v};
+    }
+
+    Node operator * (const Node &p){
+        int nn = n * p.n % MOD;
+        int vv = (n * p.v % MOD + v * p.n % MOD) % MOD;
+        return {nn, vv};
+    }
+}pre[N][20], suf[N][20], mul;
+
+int fac[N], inv[N];
+
+void Init(){
+    int up = 3e5;
+    fac[0] = fac[1] = 1;
+    inv[0] = inv[1] = 1;
+    for(int i = 2; i <= up; i++){
+        fac[i] = fac[i - 1] * i % MOD;
+        inv[i] = (MOD - MOD / i) * inv[MOD % i] % MOD;
+    }
+    for(int i = 2; i <= up; i++){
+        inv[i] = inv[i - 1] * inv[i] % MOD;
+    }
+}
+
+int C(int n, int m){
+    return fac[n] * inv[m] % MOD * inv[n - m] % MOD;
+}
+
+void Dfs(int l, int r, int cl, int cr){
+    if(l > r){
+        (num[cl][cr][0] += fac[cl] * fac[cr] % MOD) %= MOD;
+        return;
+    }
+    int mid = (l + r) / 2;
+    (num[cl][cr][1] += fac[cl] * fac[cr] % MOD) %= MOD;
+    Dfs(l, mid - 1, cl, cr + 1);
+    Dfs(mid + 1, r, cl + 1, cr);
+}
+
+signed main(){
+    Init();
+
+    cin >> n >> m;
+
+    Dfs(1, n, 0, 0);
+
+    pre[0][0].n = 1;
+    for(int i = 1; i <= n; i++){
+        for(int j = 0; j < 20; j++){
+            if(j != 0){
+                pre[i][j] = pre[i - 1][j - 1];
+                pre[i][j] += i;
+            }
+            pre[i][j] += pre[i - 1][j];
+        }
+    }
+
+    suf[n + 1][0].n = 1;
+    for(int i = n; i >= 1; i--){
+        for(int j = 0; j < 20; j++){
+            if(j != 0){
+                suf[i][j] = suf[i + 1][j - 1];
+                suf[i][j] += i;
+            }
+            suf[i][j] += suf[i + 1][j];
+        }
+    }
+
+    for(int i = 1; i <= m; i++){
+        cin >> x;
+        int ans = 0;
+        for(int l = 0; l < 20; l++){
+            for(int r = 0; r < 20; r++){
+                if(!num[l][r][0] && !num[l][r][1]){
+                    continue;
+                }
+
+                mul = pre[x - 1][l] * suf[x + 1][r];
+                if(num[l][r][0]){
+                    (ans += mul.v * num[l][r][0] % MOD * fac[n - l - r] % MOD) %= MOD;
+                }                
+                if(num[l][r][1]){
+                    mul += x;
+                    (ans += mul.v * num[l][r][1] % MOD * fac[n - l - r - 1] % MOD) %= MOD;
+                }
+            }
+        }
+        cout << ans << "\n";
+    }
+}
+```
+
+
+
+
+
+## C
+
+
+
+我第一眼的想法是做高维前缀和, 该位置的取值在他的补集的子集中取最优的, 但这样是 $n^2$ 级别的
+
+
+
+**性质**
+
+​	这种交换是具有传递性的, 即若 a 和 b 可以交换, b 和 c 可以交换, 那么可以经过 b 中转, 使得 a, c 互换
+
+
+
+所以可以把能互换的点对之间连边, 处于同一个连通块的点可以贪心地赋值
+
+
+
+但是这样连边也是 $n^2$ 级别的
+
+
+
+**考虑用类似高维前缀和的思路连边, 即建立一些 ''源点'' 减少连边数量**
+
+
+
+每个点向他的补集连边, 每个点所在集合向他连边, 每个集合向比他在二进制上少一个 1 的子集连边
+
+
+
+这样, 原本处于同一连通块中的点现在就处在同一个强连通分量中, 用 Tarjan 找一下强连通分量即可
+
+
+
+### 代码
+
+
+
+```cpp
+#include <bits/stdc++.h>
+#define int long long
+#pragma optmistic(3)
+using namespace std;
+const int N = 3e6 + 10, ST = (1 << 20) + 1;
+
+int n, a[N];
+vector <int> e[N];
+
+int dfn[N], low[N], cdfn;
+int col[N], ccol;
+bool ins[N];
+vector <int> st;
+
+priority_queue <int, vector <int>, greater <int>> q[N];
+
+void Tarjan(int x){
+    dfn[x] = low[x] = ++cdfn;
+
+    ins[x] = 1;
+    st.push_back(x);
+
+    for(auto i : e[x]){
+        if(!dfn[i]){
+            Tarjan(i);
+            low[x] = min(low[x], low[i]);
+        }else if(ins[i]){
+            low[x] = min(low[x], dfn[i]);
+        }
+    }
+
+    if(dfn[x] == low[x]){
+        ++ccol;
+
+        int tp = st.back();
+        do{
+            tp = st.back(), st.pop_back();
+            ins[tp] = 0;
+            col[tp] = ccol;
+        }while(tp != x);
+    }
+}
+
+signed main(){
+    cin >> n;
+    for(int i = 1; i <= n; i++){
+        cin >> a[i];
+    }
+
+    int up = (1 << 20) - 1, upp = 20;
+    for(int i = 1; i <= n; i++){
+        int ed = (up ^ a[i]);
+        e[i + ST].push_back(ed);
+        e[a[i]].push_back(i + ST);
+    }
+    for(int i = 0; i <= up; i++){
+        for(int j = 0; j < upp; j++){
+            if((i >> j) & 1){
+                e[i].push_back(i ^ (1 << j));
+            }
+        }
+    }
+
+    for(int i = 0; i <= ST + n; i++){
+        if(!dfn[i]){
+            Tarjan(i);
+        }
+    }
+
+    for(int i = ST + 1; i <= ST + n; i++){
+        q[col[i]].push(a[i - ST]);
+    }
+
+    for(int i = ST + 1; i <= ST + n; i++){
+        cout << q[col[i]].top() << " ";
+        q[col[i]].pop();
+    }
+    cout << "\n";
+}
+```
+
+
+
+
+
+## D
+
+
+
+有个人写了快一百行的 点分治, 就是为了拿 15 pts 的部分分, 我不说是谁
+
+
+
+鸽了
