@@ -9,6 +9,8 @@ navigation:
     url: /
   - name: 关于
     url: /about
+  - name: 目录
+    url: /content
   - name: 分类
     url: /tags
   - name: 链接
