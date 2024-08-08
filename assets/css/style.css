@@ -1,23 +1,27 @@
-body {
-    background-color: white;
-}
 /* style.css */
+
+body {
+  background-color: white; /* 设置背景颜色 */
+  position: relative; /* 使子元素可以相对于父元素定位 */
+}
 
 .ball {
   position: absolute;
   bottom: 20px;
-  width: 50px;
-  height: 50px;
+  left: 50%;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background-color: red;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 添加阴影效果 */
   animation: rotate 3s infinite linear;
 }
 
 @keyframes rotate {
   0% {
-    transform: rotate(0deg);
+    transform: translateX(-50%) rotate(0deg);
   }
   100% {
-    transform: rotate(360deg);
+    transform: translateX(-50%) rotate(360deg);
   }
 }
