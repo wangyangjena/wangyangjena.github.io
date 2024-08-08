@@ -39,23 +39,9 @@ layout: default
   <h2>No post found</h2>
 {% endif %}
 
-<!-- index.html -->
----
-layout: default
----
-
-<h1>Welcome to My Blog</h1>
-
-<h2>Recent Articles</h2>
-<ul>
-  {% for link in site.data.navigation[0].sublinks %}
-    <li><a href="{{ link.url }}">{{ link.title }}</a></li>
-  {% endfor %}
-</ul>
-
 <div class="posts">
   {% for post in paginator.posts %}
-  {% unless post.draft %}
+<!--   {% unless post.draft %} -->
     <article class="post">
       <h1>
         <a href="{{ site.baseurl }}{{ post.url }}">{{ post.title }}</a>
