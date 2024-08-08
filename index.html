@@ -73,6 +73,21 @@ layout: default
   {% endfor %}
 </div>
 
+<!-- index.html -->
+---
+layout: default
+---
+
+<h1>Welcome to My Blog</h1>
+
+<h2>Recent Articles</h2>
+<ul>
+  {% for link in site.data.navigation[0].sublinks %}
+    <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+  {% endfor %}
+</ul>
+
+
 <div class="pagination">
   {% if paginator.previous_page %}
     <span class="prev">
