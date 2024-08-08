@@ -11,6 +11,8 @@ navigation:
     url: /about
   - name: 分类
     url: /tags
+  - name: 网页链接
+    url: /240426_Websites
 
 paginate: 8
 
