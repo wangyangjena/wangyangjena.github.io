@@ -4,7 +4,9 @@ description: "A blog for notes."
 avatar: https://cdn.luogu.com.cn/upload/image_hosting/7zynog7i.png
 favicon: https://cdn.luogu.com.cn/upload/image_hosting/7zynog7i.png
 
-theme: my-awesome-theme
+collections:
+  posts:
+    output: true
 
 navigation:
   - name: 首页
