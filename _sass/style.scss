@@ -1,0 +1,30 @@
+body {
+    background-color: #FFF5EE; /* 米白色背景颜色 */
+    overflow: hidden; /* 防止内容溢出到背景之外 */
+}
+
+/* 创建动画效果 */
+@keyframes moveLines {
+    0% {
+        background-position: 0 0, 0 0, 0 0;
+    }
+    100% {
+        background-position: 100px 100px, -100px -100px, 200px 200px;
+    }
+}
+
+/* 添加动态线条的背景图像 */
+body::before,
+body::after {
+    content: "";
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
+                      linear-gradient(-45deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
+                      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%),
+                      linear-gradient(-90deg, rgba(0, 0, 0, 0.1) 25%, transparent 25%);
+    background-size: 100px 100px;
+    background-repeat: repeat;
+    animation: moveLines 3s infinite linear;
+}
