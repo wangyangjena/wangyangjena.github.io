@@ -4,6 +4,11 @@ description: "A blog for notes."
 avatar: https://cdn.luogu.com.cn/upload/image_hosting/7zynog7i.png
 favicon: https://cdn.luogu.com.cn/upload/image_hosting/7zynog7i.png
 
+collections:
+  posts:
+    output: true
+    permalink: /:year/:month/:day/:title/
+
 navigation:
   - name: 首页
     url: /
