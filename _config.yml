@@ -1,8 +1,10 @@
 name: "Bubble_e's blog"
-description: "None"
+description: "A blog for notes."
 
 avatar: https://cdn.luogu.com.cn/upload/image_hosting/7zynog7i.png
 favicon: https://cdn.luogu.com.cn/upload/image_hosting/7zynog7i.png
+
+theme: my-awesome-theme
 
 navigation:
   - name: 首页
