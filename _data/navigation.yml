@@ -1,5 +1,5 @@
-- title: Blog
-  url: /blog/
+- title: 目录
+  url: /content/
   sublinks:
     - title: 文章1
       url: /blog/post1/
