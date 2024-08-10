@@ -1,0 +1,553 @@
+---
+layout: post
+title: "08-08 题解"
+date:   2024-08-08
+tags: [Solution]
+comments: true
+author: wangyangjena
+toc: true
+
+---
+
+<!-- 在Markdown文件中 -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    var text = $('article').text(); // 获取文章内容
+    var wordCount = text.split(/\s+/).length; // 计算字数
+    $('article').append('<p>字数统计： ' + wordCount + '</p>'); // 将字数添加到文章中
+});
+</script>
+
+
+
+<head>
+    <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            inlineMath: [['$','$']]
+            }
+        });
+    </script>
+</head>
+
+
+
+
+
+
+# 08-08 题解
+
+
+
+**[地址](https://mna.wang/contest/1263)**
+
+
+
+## A - CF1420E
+
+
+
+luogu 翻译更正
+
+> if he gives no more that *k* orders
+>
+> 对于至多 k 次操作, 题面没有翻译出来
+
+
+
+### 思路
+
+
+
+**怎么算贡献？**
+
+
+
+贡献 （被保护）出现在 「处在任意两个不同的 0 的连续段的守卫」之间，而处于同一连续段的守卫之间没有贡献
+
+
+
+设一共 $cnt$ 个 $0$， 每个连续段分别有 $c_i$ 个 $0$
+
+
+
+则 $contribute = C_{cnt}^{2} - \sum_{i} C_{c_i}^{2}$
+
+
+
+**考虑 DP**
+
+
+
+设 $dp(i, j, k, l)$ 为考虑到第 $i$ 个人， 前面一共进行了 $j$ 步操作， 用了 $k$ 个 $1$ ， 当前连续段有 $l$ 个 $0$
+
+
+
+但是这样的空间复杂度是 $O(n^5)$， 铁定过不了
+
+
+
+尝试优化掉一维状态
+
+
+
+最后一维是最好优化的， 我们只需要把状态的含义改为 「考虑到第 $i$ 个人， 他选了 $1$」， 这样只需要枚举一个 $ii\ > i$ ， 表示下一个选 $1$ 的位置是 $ii$ ， 转移即可。
+
+
+
+而原来的 $l$ 一维就等于 $ii - i - 1$
+
+
+
+所以 $dp(i, j, k) = min\{dp(ii < i\ , jj <= j\ , k - 1)\}$
+
+
+
+注意， 输出答案时要取前缀 $min$， 原因见文首 「翻译勘误」
+
+
+
+### 代码
+
+
+
+$O(n^5)$ 加一些剪枝， 跑的飞快
+
+
+
+```cpp
+#include<bits/stdc++.h>
+using namespace std;
+const int N = 81, INF = 1e9;
+
+int n;
+int a[N], ps[N], cnt, cntzr;
+int dp[N][N * N][N], ans[N * N];
+
+int Calc(int x){
+    return x * (x - 1) / 2;
+}
+
+signed main(){
+    cin >> n;
+    for(int i = 1; i <= n; i++){
+        cin >> a[i];
+        if(a[i] == 1) ps[++cnt] = i;
+        else ++cntzr;
+    }
+
+    int up = Calc(n);
+    for(int i = 0; i <= n; i++){
+        for(int j = 0; j <= up; j++){
+            for(int k = 0; k <= n; k++){
+                dp[i][j][k] = INF;
+            }
+        }
+    }
+
+    for(int i = 1; i <= n; i++){
+        dp[i][abs(ps[1] - i)][1] = Calc(i - 1);
+        for(int j = 0; j <= up; j++){
+            for(int k = 1; k <= i && k < cnt; k++){
+                if(dp[i][j][k] == INF) continue;
+                int rem = cnt - k;
+                for(int ii = i + 1; ii <= n - rem + 1; ii++){
+                    int jj = j + abs(ps[k + 1] - ii);
+                    if(jj <= up){
+                        dp[ii][jj][k + 1] = min(dp[ii][jj][k + 1], dp[i][j][k] + Calc(ii - i - 1));
+                    }
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i <= up; i++){
+        ans[i] = Calc(cntzr);
+    }
+    for(int j = 0; j <= up; j++){
+        if(j) ans[j] = ans[j - 1];
+        for(int i = cnt; i <= n; i++){
+            if(dp[i][j][cnt] == INF) continue;
+            ans[j] = min(ans[j], dp[i][j][cnt] + Calc(n - i));
+        }
+    }
+    for(int i = 0; i <= up; i++){
+        ans[i] = Calc(cntzr) - ans[i];
+        cout << ans[i] << " ";
+    }
+    cout << "\n";
+}
+```
+
+
+
+## B - AGC017D
+
+
+
+吐槽  MX 给的题面有误
+
+
+
+### 思路
+
+
+
+首先， 父节点的每个子树都可以看成一个独立的游戏， 拆开， 发现形如 Nim 游戏
+
+
+
+递归地拆开后， 发现只需要处理父节点只有一个儿子的情况
+
+
+
+但是这个游戏比较特殊， 如果当前节点非根， 我们可以一步直接断掉他和根的连边， 结束这颗子树中的游戏
+
+
+
+这一点在博弈状态的 DAG 上表示为： 每个非根节点都指向 (SG = 0)
+
+
+
+因为 SG(i) 表示 $i$ 的子游戏的 MEX， 而 $i$ 直接指向 $0$ ， 所以实际的 SG = SG(i) + 1（$i$ 非根的情况下）
+
+
+
+### 代码
+
+
+
+```cpp
+#include<bits/stdc++.h>
+#define int long long
+#define Pii pair <int, int>
+using namespace std;
+const int N = 1e6 + 10, MOD = 20, INF = 1e18;
+
+int n;
+int u, v, sg[N];
+vector <int> e[N];
+
+void Dfs(int x, int y){
+    for(auto i : e[x]){
+        if(i == y) continue;
+        Dfs(i, x);
+        sg[x] ^= (sg[i] + 1);
+    }
+}
+
+signed main(){
+    cin >> n;
+    for(int i = 1; i < n; i++){
+        cin >> u >> v;
+        e[u].push_back(v);
+        e[v].push_back(u);
+    }
+    Dfs(1, 0);
+    if(sg[1]){
+        cout << "Alice\n";
+    }else{
+        cout << "Bob\n";
+    }
+}
+```
+
+
+
+
+
+## C - AGC052B
+
+
+
+**经典套路： 把边权转移到点权上**
+
+
+
+### 思路
+
+
+
+设点权设为从根到他的路径权值的抑或和
+
+
+
+这样你就发现了一些神奇的东西： 对于一条边 $(u, v) dep_u < dep_v$， 操作这条边相当于交换 $u, v$ 点权， 其他点都不变
+
+
+
+但是有特殊情况：根节点没有连向父亲的边， 不妨假想一条
+
+
+
+因为题目中的操作不会改变点权集合， 所以如果 $w_2$ 中的那条虚拟边和 $w_1$ 中的一样都是 $0$ 的话， 两个集合应该相等
+
+
+
+将 $w_1, w_2$  的所有点权抑或起来就是 $w_2$ 中虚拟边的边权， 将 $w_2$ 中所有点权与他抑或后比较两个集合是否相等即可 
+
+
+
+### 代码
+
+
+
+```cpp
+#include<bits/stdc++.h>
+#define int long long
+#define Pii pair <int, int>
+using namespace std;
+const int N = 1e7 + 10, MOD = 998244353;
+const int Inv2 = (MOD + 1) / 2;
+
+int n;
+int u, v, wa, wb;
+int a[N], b[N];
+
+struct Edge{
+    int v, wa, wb;
+};
+vector <Edge> e[N];
+
+void Dfs(int x, int y, int va, int vb){
+    a[x] = va, b[x] = vb;
+    for(auto i : e[x]){
+        if(i.v == y) continue;
+        Dfs(i.v, x, va ^ i.wa, vb ^ i.wb);
+    }
+}
+
+signed main(){
+    cin >> n;
+    for(int i = 1; i < n; i++){
+        cin >> u >> v >> wa >> wb;
+        e[u].push_back({v, wa, wb});
+        e[v].push_back({u, wa, wb});
+    }
+
+    Dfs(1, 0, 0, 0);
+
+    int xr = 0;
+    for(int i = 1; i <= n; i++){
+        xr ^= (a[i] ^ b[i]);
+    }
+    for(int i = 1; i <= n; i++){
+        b[i] ^= xr;
+    }
+
+    sort(a + 1, a + 1 + n);
+    sort(b + 1, b + 1 + n);
+    for(int i = 1; i <= n; i++){
+        if(a[i] != b[i]){
+            cout << "NO\n";
+            return 0;
+        }
+    }
+    cout << "YES\n";
+}
+```
+
+
+
+## D - CF1710E
+
+
+
+二分图博弈， 鸽
+
+
+
+# E - AGC040C
+
+
+
+**经典套路：黑白染色**
+
+
+
+### 思路
+
+
+
+假设我们已经有了一个串， 将他的奇数位染成黑色， 偶数位染成白色
+
+
+
+对于 $AB, BA$ 他们一定是黑白各占一个的
+
+
+
+不妨把黑色位置的 $A, B$ 都改成 $A$ ， 白色的都改成 $B$ ， 那么原题中的限制就变成了 「不能删除连续的 $AA, BB$」
+
+
+
+那么只有当 $A$ 或 $B$ 的数量超过一半时才没法变成空串
+
+
+
+方案数用组合数算一下就行
+
+
+
+```cpp
+#include<bits/stdc++.h>
+#define int long long
+#define Pii pair <int, int>
+using namespace std;
+const int N = 1e7 + 10, MOD = 998244353;
+const int Inv2 = (MOD + 1) / 2;
+
+int n;
+int tot;
+
+int fac[N], inv[N];
+
+void Init(){
+    int up = 1e7;
+
+    fac[0] = fac[1] = 1;
+    inv[0] = inv[1] = 1;
+    for(int i = 2; i <= up; i++){
+        fac[i] = fac[i - 1] * i % MOD;
+        inv[i] = (MOD - MOD / i) * inv[MOD % i] % MOD;
+    }
+    for(int i = 2; i <= up; i++){
+        inv[i] = inv[i - 1] * inv[i] % MOD;
+    }
+}
+
+int C(int n, int m){
+    return fac[n] * inv[m] % MOD * inv[n - m] % MOD;
+}
+
+int Q_pow(int a, int b){
+    int ans = 1, p = a;
+    while(b){
+        if(b & 1) ans = (ans * p) % MOD;
+        b >>= 1;
+        p = (p * p) % MOD;
+    }
+    return ans;
+}
+
+signed main(){
+    // freopen("1.in", "r", stdin);
+
+    cin >> n;
+    Init();
+    tot = Q_pow(3, n);
+    // cout << tot << "tot\n";
+
+    int st = (n + 1) / 2 + 1;
+    // cout << st << "st\n";
+    for(int i = st; i <= n; i++){
+        int num = C(n, i) * Q_pow(2, n - i) % MOD * 2 % MOD;
+        // cout << num << " ";
+        tot = (tot - num + MOD) % MOD;
+    }
+    cout << tot << "\n";
+}
+```
+
+
+
+
+
+## F - CF1642F
+
+
+
+根号分治， 随机化都行（题解区还有刚上新的同学的做法）
+
+
+
+随机化正确率的计算
+
+
+
+如果模数是 20， 那么不冲突的概率为 $\frac{C_{15}^{5}}{C_{20}^{5}} \approx 0.19369195046439628483 $
+
+
+
+那么我们做 20 次， 正确率就是 $1 - (1 - 0.19369195046439628483) ^ {20} \approx 0.98650975275351626002$， 非常的高啊
+
+
+
+### 代码
+
+
+
+```cpp
+#include<bits/stdc++.h>
+#define int long long
+#define Pii pair <int, int>
+using namespace std;
+const int N = 1e6 + 10, MOD = 20, INF = 1e18;
+
+int n, m, ans;
+int a[N][7], w[N], num[N];
+int dp[1 << 21], id[N];
+
+int cnt;
+unordered_map <int, int> rid;
+
+void Calc(){
+    random_shuffle(id + 1, id + 1 + cnt);
+
+    int upp = (1 << 21) - 1;
+    for(int i = 0; i <= upp; i++){
+        dp[i] = INF;
+    }
+    for(int i = 1; i <= n; i++){
+        num[i] = 0;
+        for(int j = 1; j <= m; j++){
+            a[i][j] = id[a[i][j]];
+            num[i] |= (1 << (a[i][j] % MOD));
+        }
+        dp[num[i]] = min(dp[num[i]], w[i]);
+    }
+    for(int i = 0; i <= 20; i++){
+        for(int j = 0; j <= upp; j++){
+            if((j >> i) & 1){
+                dp[j] = min(dp[j], dp[j ^ (1 << i)]);
+            }
+        }
+    }
+    for(int i = 1; i <= n; i++){
+        ans = min(ans, w[i] + dp[upp ^ num[i]]);
+    }
+}
+
+signed main(){
+    srand(1ll * time(0) * time(0) % 998244353);
+
+    cin >> n >> m;
+    for(int i = 1; i <= n; i++){
+        for(int j = 1; j <= m; j++){
+            cin >> a[i][j];
+            if(!rid[a[i][j]]) rid[a[i][j]] = ++cnt;
+            a[i][j] = rid[a[i][j]];
+        }
+        cin >> w[i];
+    }
+
+    for(int i = 1; i <= cnt; i++){
+        id[i] = i;
+    }
+
+    ans = INF;
+    for(int i = 1; i <= 20; i++){
+        Calc();
+    }
+
+    if(ans == INF){
+        ans = -1;
+    }
+    cout << ans << "\n";
+}
+```
+
